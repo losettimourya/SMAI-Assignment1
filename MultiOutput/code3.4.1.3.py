@@ -10,7 +10,7 @@ class MultiOutputDecisionTreeClassifier:
         self.max_depth = max_depth
         self.max_features = max_features
         self.criterion = criterion
-        self.classifier = DecisionTreeClassifier(criterion=criterion,random_state=42)
+        self.classifier = DecisionTreeClassifier(max_depth=max_depth,max_features=max_features,criterion=criterion,random_state=42)
     def fit(self, X, y):
         mlb = MultiLabelBinarizer()
         y = mlb.fit_transform(y.str.split(' '))
