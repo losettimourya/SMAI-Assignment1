@@ -1,6 +1,8 @@
 import numpy as np
+import time
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-import matplotlib.pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
 class KNNClassifier:
     def __init__(self, k=5, distance_metric='manhattan', encoder_type=None):
         self.k = k
@@ -44,15 +46,11 @@ class KNNClassifier:
             self.X_train, self.X_test, self.y_train, self.y_test = self.train_val_split(X_resnet, y)
 
     def euclidean_distance(self, x1, x2):
-        # return np.sqrt(np.sum((x1 - x2) ** 2),axis=1)
         return np.linalg.norm(x1-x2,axis=1,ord=2)
-
     def manhattan_distance(self, x1, x2):
         return np.linalg.norm(x1-x2,axis=1,ord=1)
-
-    def cosine_distance(self, x1, x2):
+    def cosine_distance(self, x1, x2) -> float:
         return 1-np.dot(x2,x1)/(np.linalg.norm(x2,axis=1)*np.linalg.norm(x1))
-
     def calculate_distance(self, x1, x2):
         if self.distance_metric == 'euclidean':
             return self.euclidean_distance(x1, x2)
@@ -78,47 +76,49 @@ class KNNClassifier:
         
     def predict(self):
         y_pred = []
-        #print(len(X_test[0][0]))
-        #print(X_test)
         for x in self.X_test:
-            #print(x)
-            #distances = [self.calculate_distance(x[0][0], x_train[0][0]) for x_train in self.X_train]
-            #self.X_train = self.X_train[0]
-            # print(len(self.X_train))
-            # print(len(x[0][0]))
             distances = self.calculate_distance(x, self.X_train)
-            # distances = np.array([self.calculate_distance(x[0][0], x_train[0][0]) for x_train in self.X_train])
             sorted_indices = np.argsort(distances)
             k_indices = sorted_indices[:self.k]
             k_nearest_labels = [self.y_train[i] for i in k_indices]
             unique_labels, counts = np.unique(k_nearest_labels, return_counts=True)
             pred_label = unique_labels[np.argmax(counts)]
             y_pred.append(pred_label)
-        return accuracy_score(self.y_test,y_pred)
-        #return np.array(y_pred)
-
-# Load the dataset from data.npy
+        print(self.encoder_type)
+        print("Accuracy:" + str(accuracy_score(self.y_test,y_pred)))
+        print("F1 Score:" + str(f1_score(self.y_test,y_pred,average='macro')))
+        print("Precision score:" + str(precision_score(self.y_test,y_pred,average='macro',zero_division=0)))
+        print("Recall score:" + str(recall_score(self.y_test,y_pred,average='macro',zero_division=0)))
+def train_val_split(X, y, test_size=0.2, random_state=42):
+    np.random.seed(random_state)
+    indices = np.random.permutation(len(X))
+    split_index = int(len(X) * (1 - test_size))
+    train_indices, val_indices = indices[:split_index], indices[split_index:]
+    X_train, X_val = X[train_indices], X[val_indices]
+    y_train, y_val = y[train_indices], y[val_indices]
+    x_train = [item[0][0] for item in X_train]
+    x_val = [item[0][0] for item in X_val]
+        
+    return x_train, x_val, y_train, y_val
 data = np.load('data.npy', allow_pickle=True)
-# X_resnet = data[:, 1:2] 
-# X_vit = data[:, 2:3]
-# y = data[:, 3] 
-    
+X_vit = data[:, 2:3]
+y = data[:, 3] 
+X_train, X_test, y_train, y_test = train_val_split(X_vit, y)
+knn_classifier = KNeighborsClassifier()
+start_time = time.time()
+vit_knn = KNNClassifier(k=3, distance_metric='euclidean',encoder_type='VIT')
+vit_knn.fit(data=data)
+vit_knn.predict()
+end_time = time.time()
+knn_classifier = KNeighborsClassifier()
+knn_classifier.fit(X_train, y_train)
+y_pred = knn_classifier.predict(X_test)
+end2_time = time.time()
+resnet_knn = KNNClassifier(k=5, distance_metric='cosine',encoder_type='Resnet')
+resnet_knn.fit(data=data)
+resnet_knn.predict()
+execution_time = end_time - start_time
+execution_time2 = end2_time - end_time
+print(f"Execution time1: {execution_time} seconds")
+print(f"Execution time2: {execution_time2} seconds")
 
-# X_resnet_train, X_resnet_test, y_resnet_train, y_resnet_test = train_val_split(X_resnet, y)
-# X_vit_train, X_vit_test, y_vit_train, y_vit_test = train_val_split(X_vit, y)
-k_value = []
-accuracy = []
-for i in range(1,10,2):
-    knn = KNNClassifier(k=i,distance_metric='euclidean',encoder_type='VIT')
-    knn.fit(data=data)
-    ans = knn.predict()
-    k_value.append(i)
-    accuracy.append(ans)
-
-print(k_value)
-print(accuracy)
-plt.plot(k_value, accuracy, marker='o', linestyle='-')
-plt.xlabel('K')
-plt.ylabel('Accuracy')
-plt.title('K vs Accuracy graph')
-plt.show()

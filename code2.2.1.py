@@ -16,7 +16,7 @@ plt.bar(unique_labels, label_counts, align='center', alpha=0.7)
 plt.xlabel('Label Name')
 plt.ylabel('Frequency')
 plt.title('Label Distribution in the Dataset')
-plt.xticks(rotation=90)  # Rotate the x-axis labels for better readability
+plt.xticks(rotation=45)  # Rotate the x-axis labels for better readability
 
 # Show the plot
 plt.show()

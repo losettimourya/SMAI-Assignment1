@@ -10,7 +10,7 @@ class MultiOutputDecisionTreeClassifier:
         self.max_depth = max_depth
         self.max_features = max_features
         self.criterion = criterion
-        self.classifier = DecisionTreeClassifier(max_depth=max_depth,max_features=max_features,criterion=criterion,random_state=42)
+        self.classifier = DecisionTreeClassifier(max_depth=max_depth, max_features = max_features,criterion=criterion,random_state=42)
     def fit(self, X, y):
         self.classifier.fit(X, y)
     def predict(self, X):
@@ -33,8 +33,9 @@ X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_st
 # y_train, y_val = y[:num_test_samples], y[num_test_samples:]
 mlb = MultiLabelBinarizer()
 # y_train = y_train.str.get_dummies(sep=' ')
-y_train = mlb.fit_transform(y_train)
-y_val = mlb.fit_transform(y_val)
+y_train = mlb.fit_transform(y_train.str.split(' '))
+y_val = mlb.fit_transform(y_val.str.split(' '))
+print(y_train[1])
 ans = []
 for i in [3,5,10,20,30]:
     for j in [3,5,7,9,11]:

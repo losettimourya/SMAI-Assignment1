@@ -11,7 +11,7 @@ class PowersetDecisionTreeClassifier:
         self.max_depth = max_depth
         self.max_features = max_features
         self.criterion = criterion
-        self.classifier = DecisionTreeClassifier(max_depth = max_depth, max_features=max_features,criterion=criterion,random_state=42)
+        self.classifier = DecisionTreeClassifier(max_depth=max_depth,max_features=max_features,criterion=criterion,random_state=42)
     def fit(self, X, y):
         self.classifier.fit(X, y)
     def predict(self, X):
@@ -32,17 +32,24 @@ X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_st
 def powerset(iterable):
     s = list(iterable)
     unique_combos = set()
-    for r in range(len(s) + 1):
+    for r in range(0,len(s) + 1):
         for combo in combinations(sorted(s), r):
+            # return tuple(combo)
             unique_combos.add(tuple(combo))
     return list(unique_combos)
 label_combinations = y_train.apply(lambda x: tuple(x.split(' '))).apply(powerset)
 label_combinations_val = y_val.apply(lambda x: tuple(x.split(' '))).apply(powerset)
-# print(label_combinations)
+print(label_combinations)
+unique_labels = y.str.split(' ').explode().unique()  
+all_labels = list(chain.from_iterable(combinations(unique_labels, r) for r in range(len(unique_labels) + 1)))
+all_label_combinations = all_labels
 #print(label_combinations_val)
-all_label_combinations = list(set(label_combinations.sum() + label_combinations_val.sum()))
+# all_label_combinations = list(set(label_combinations.sum() + label_combinations_val.sum()))
+# print(all_label_combinations)
+print(label_combinations_val)
 label_combinations_list = label_combinations.tolist()
 label_combinations_val_list = label_combinations_val.tolist()
+print(label_combinations_val_list)
 #print(label_combinations_list)
 mlb = MultiLabelBinarizer(classes=all_label_combinations)
 y_train = mlb.fit_transform(label_combinations_list)
@@ -55,11 +62,12 @@ y_val = y_val_df.loc[:, ~y_val_df.columns.duplicated()]
 # # y_val = mlb.fit_transform(y_val.apply(lambda x: tuple(x.split(' '))))
 #print(y_train)
 print(y_val)
-clf = PowersetDecisionTreeClassifier(max_depth=30, max_features = 11,criterion='gini')
+clf = PowersetDecisionTreeClassifier(max_depth=30, max_features = 11,criterion='entropy')
 clf.fit(X_train, y_train)
 val_predictions = clf.predict(X_val)
 # print(val_predictions)
 y_val = y_val.to_numpy()
+print(np.sum(y_val[0]))
 accuracy = accuracy_score(y_val, val_predictions)
 micro_f1 = f1_score(y_val, val_predictions, average='micro')
 macro_f1 = f1_score(y_val, val_predictions, average='macro')
@@ -67,13 +75,13 @@ conf_matrix = confusion_matrix(y_val.argmax(axis=1), val_predictions.argmax(axis
 precision = precision_score(y_val, val_predictions, average='micro')
 recall = recall_score(y_val, val_predictions, average='micro')
 
-print(f'Accuracy: {accuracy:.2f}')
-print(f'F1 (Micro): {micro_f1:.2f}')
-print(f'F1 (Macro): {macro_f1:.2f}')
+print(f'Accuracy: {accuracy:.5f}')
+print(f'F1 (Micro): {micro_f1:.5f}')
+print(f'F1 (Macro): {macro_f1:.5f}')
 print('Confusion Matrix:')
 print(conf_matrix)
-print(f'Precision (Micro): {precision:.2f}')
-print(f'Recall (Micro): {recall:.2f}')
+print(f'Precision (Micro): {precision:.5f}')
+print(f'Recall (Micro): {recall:.5f}')
 # val_predictions = mlb.inverse_transform(val_predictions)
 # y_val = mlb.inverse_transform(y_val)
 
