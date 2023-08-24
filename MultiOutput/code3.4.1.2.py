@@ -35,8 +35,9 @@ mlb = MultiLabelBinarizer()
 # y_train = y_train.str.get_dummies(sep=' ')
 y_train = mlb.fit_transform(y_train.str.split(' '))
 y_val = mlb.fit_transform(y_val.str.split(' '))
-print(y_train[1])
+# print(y_train[1])
 ans = []
+ans1 = []
 for i in [3,5,10,20,30]:
     for j in [3,5,7,9,11]:
         for k in ['gini','entropy']:
@@ -45,7 +46,15 @@ for i in [3,5,10,20,30]:
             val_predictions = clf.predict(X_val)
             # print(y_val)
             macro_f1 = f1_score(y_val, val_predictions, average='macro')
+            micro_f1 = f1_score(y_val, val_predictions, average='micro')
             ans.append([macro_f1,i,j,k])
+            ans1.append([micro_f1,i,j,k])
 ans.sort(reverse=True)
+ans1.sort(reverse=True)
+print("According to F1 Macro: ")
 for i in range(0,3):
     print("F1 Score: " + str(ans[i][0]) + " Max Depth: " + str(ans[i][1]) + " Max Features: " + str(ans[i][2]) + " Criterion: " + str(ans[i][3]))
+print("According to F1 Micro: ")
+for i in range(0,3):
+    print("F1 Score: " + str(ans1[i][0]) + " Max Depth: " + str(ans1[i][1]) + " Max Features: " + str(ans1[i][2]) + " Criterion: " + str(ans1[i][3]))
+

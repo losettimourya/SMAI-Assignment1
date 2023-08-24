@@ -49,8 +49,8 @@ def custom_binarize(label_combination):
     return binarized
 
 # Binarize y_train and y_val using the custom binarization function
-print(label_combinations_list[0])
-print(label_combinations_val_list[0])
+# print(label_combinations_list[0])
+# print(label_combinations_val_list[0])
 y_train = np.array([custom_binarize(labels) for labels in label_combinations_list])
 y_val = np.array([custom_binarize(labels) for labels in label_combinations_val_list])
 # print(np.sum(y_train[0])
@@ -67,6 +67,7 @@ y_val = np.array([custom_binarize(labels) for labels in label_combinations_val_l
 # print(y_val)
 # print(np.sum(y_val[1]))
 ans = []
+ans1 = []
 for i in [3,5,10,20,30]:
     for j in [3,5,7,9,11]:
             for k in ['gini','entropy']:  
@@ -83,10 +84,15 @@ for i in [3,5,10,20,30]:
                 micro_f1 = f1_score(y_val, val_predictions, average='micro', zero_division=0)
                 macro_f1 = f1_score(y_val, val_predictions, average='macro',zero_division=0)
                 ans.append([macro_f1,i,j,k,val_predictions])
+                ans1.append([micro_f1,i,j,k,val_predictions])
 ans.sort(reverse=True)
+ans1.sort(reverse=True)
+print("According to F1 Macro: ")
 for i in range(0,3):
-    print(np.sum(ans[i][4]))
     print("F1 Score: " + str(ans[i][0]) + " Max Depth: " + str(ans[i][1]) + " Max Features: " + str(ans[i][2]) + " Criterion: " + str(ans[i][3]))
+print("According to F1 Micro: ")
+for i in range(0,3):
+    print("F1 Score: " + str(ans1[i][0]) + " Max Depth: " + str(ans1[i][1]) + " Max Features: " + str(ans1[i][2]) + " Criterion: " + str(ans1[i][3]))
 # val_predictions = mlb.inverse_transform(val_predictions)
 # y_val = mlb.inverse_transform(y_val)
 
