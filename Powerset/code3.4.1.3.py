@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import OneHotEncoder, MultiLabelBinarizer
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, precision_score, recall_score
+from sklearn.model_selection import KFold
 
 class PowersetDecisionTreeClassifier:
     def __init__(self, max_depth=5, max_features='auto', criterion='gini'):
@@ -28,13 +29,25 @@ X = data_encoded.drop('labels', axis=1)  # Features
 y = data_encoded['labels']  # Target variable
 # print(y)
 K = 5
+# validation_indices = []
+# n = len(X)
+# for i in range(K):
+#     start = (n // K) * i
+#     end = (n // K) * (i + 1)
+#     val_indices = list(range(start, end))
+#     train_indices = list(set(range(n)) - set(val_indices))
+#     validation_indices.append((train_indices, val_indices))
+kf = KFold(n_splits=K)
 accuracies = []
 f1_macros = []
 f1_micros = []
 precisions = []
 recalls = []
-for _ in range(K):
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=1/K, random_state=42+_)
+for i,(train_indices,val_indices) in enumerate(kf.split(data)):
+    # print(val_indices)
+    X_train, X_val = X.iloc[train_indices], X.iloc[val_indices]
+    # y_train, y_val = y[train_indices], y[val_indices]
+    y_train, y_val = y.iloc[train_indices], y.iloc[val_indices]
     # print(y_train)
     def powerset(iterable):
         s = list(iterable)

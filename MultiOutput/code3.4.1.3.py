@@ -24,25 +24,41 @@ data_encoded = pd.get_dummies(data, columns=categorical_cols, drop_first=True)
 X = data_encoded.drop('labels', axis=1)  # Features
 y = data_encoded['labels']  # Target variable
 K = 5
+validation_indices = []
+n = len(X)
+for i in range(K):
+    start = (n // K) * i
+    end = (n // K) * (i + 1)
+    val_indices = list(range(start, end))
+    train_indices = list(set(range(n)) - set(val_indices))
+    validation_indices.append((train_indices, val_indices))
 accuracies = []
 f1_macros = []
 f1_micros = []
 precisions = []
 recalls = []
-for _ in range(K):
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=1/K,random_state=42+_)
+for i,(train_indices,val_indices) in enumerate(validation_indices):
+    # X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=1/K,random_state=42+_)
+    # train_indices = np.setdiff1d(np.arange(n), val_indices)
+    # print(train_indices)
+    # print(val_indices)
+    # print(X.iloc[train_indices])
+    # print(X.iloc[val_indices])
+    X_train, X_val = X.iloc[train_indices], X.iloc[val_indices]
+    # y_train, y_val = y[train_indices], y[val_indices]
+    y_train, y_val = y.iloc[train_indices], y.iloc[val_indices]
     mlb = MultiLabelBinarizer()
     y_val = mlb.fit_transform(y_val.str.split(' '))
-    clf = MultiOutputDecisionTreeClassifier(max_depth=5, max_features = 5,criterion='gini')
+    clf = MultiOutputDecisionTreeClassifier(max_depth=30, max_features = 1100,criterion='entropy')
     clf.fit(X_train, y_train)
     val_predictions = clf.predict(X_val)
     # print(val_predictions)
     accuracy = accuracy_score(y_val, val_predictions)
-    micro_f1 = f1_score(y_val, val_predictions, average='micro')
-    macro_f1 = f1_score(y_val, val_predictions, average='macro')
+    micro_f1 = f1_score(y_val, val_predictions, average='micro',zero_division=0)
+    macro_f1 = f1_score(y_val, val_predictions, average='macro',zero_division=0)
     conf_matrix = confusion_matrix(y_val.argmax(axis=1), val_predictions.argmax(axis=1))
-    precision = precision_score(y_val, val_predictions, average='micro')
-    recall = recall_score(y_val, val_predictions, average='micro')
+    precision = precision_score(y_val, val_predictions, average='micro',zero_division=0)
+    recall = recall_score(y_val, val_predictions, average='micro',zero_division=0)
     # print(accuracy)
     accuracies.append(accuracy)
     f1_macros.append(macro_f1)
