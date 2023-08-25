@@ -11,12 +11,12 @@ labels = data[:, 3]
 unique_labels, label_counts = np.unique(labels, return_counts=True)
 
 # Create a bar graph to visualize the label distribution
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(40, 8))
 plt.bar(unique_labels, label_counts, align='center', alpha=0.7)
 plt.xlabel('Label Name')
 plt.ylabel('Frequency')
 plt.title('Label Distribution in the Dataset')
-plt.xticks(rotation=45)  # Rotate the x-axis labels for better readability
-
+plt.xticks(rotation=90)  # Rotate the x-axis labels for better readability
+plt.tight_layout()
 # Show the plot
 plt.show()
